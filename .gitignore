@@ -1,0 +1,6 @@
+# bun
+bun.lockb
+node_modules/
+
+# cnf
+.DS_Store
