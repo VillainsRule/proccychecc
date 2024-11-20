@@ -1,4 +1,4 @@
-import { BANNED_GTAGS } from '../constants.js';
+import { BANNED_GTAGS } from '../checks/GTAG';
 
 const get = (url) => fetch(url).then(u => u.text());
 
@@ -10,7 +10,5 @@ export default (url) => {
         if (match && !BANNED_GTAGS.includes(match[1])) console.log(`🚨 🚨 🚨 🚨 FOUND GTAG ON ${url} !!! "${match[1]}"`);
         else if (match) console.log(`found a gtag but it's already bled`);
         else console.log(`>>> ${url} has NO GTAGS!!!`);
-    }).catch(() => {
-        console.log('url down', url);
-    })
+    }).catch(() => console.log('url down', url));
 };

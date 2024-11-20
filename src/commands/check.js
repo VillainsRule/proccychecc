@@ -1,48 +1,23 @@
-import { BANNED_GTAGS } from '../constants.js';
+import checkManager from '../checks/CheckManager';
 
-const get = (url) => fetch(url).then(u => u.text());
+import { get } from '../util';
 
-export default (url) => {
-    let proxy = false;
+export default async (url) => {
+    await checkManager.waitForChecks();
 
-    let isProxy = (check) => {
-        console.log(`${url} is a proxy. Flagged: ${check}`);
-        proxy = true;
-    };
+    const flaggedChecks = [];
 
-    let totalChecks = 4;
-    let checksDone = 0;
+    let landing = await get(`${url}/`);
+    if (!landing) return console.log(`[!] "${url}" failed to load.`);
 
-    let doCheck = () => {
-        checksDone++;
-        if (checksDone === totalChecks && !proxy) console.log(`[N] ${url} is NOT a proxy!`);
-    }
+    await Promise.all(Object.entries(checkManager.checks).map(async ([name, check]) => {
+        let checkResult = await check({ url, landing });
 
-    Promise.all([
-        // GTAG
-        get(url).then((data) => {
-            BANNED_GTAGS.forEach((tag) => (data.includes(`https://www.googletagmanager.com/gtag/js?id=${tag}`)) && isProxy('GTAG'));
-            doCheck();
-        }),
+        if (checkResult.p === true) return flaggedChecks.push(name);
+        else if (checkResult.p === false) return;
+        else return console.log(`Check ${name} failed on ${url}.`);
+    }));
 
-        // UV_CONFIG
-        get(url + '/uv/uv.config.js').then((data) => {
-            data = data.toLowerCase();
-
-            if (data.includes('ultraviolet') || data.includes('encodeurl')) isProxy('UV_CONFIG');
-            else doCheck();
-        }).catch(() => doCheck()),
-
-        // RAMMERHEAD
-        get(url + '/hammerhead.js').then((data) => {
-            if (data.includes('rammerheadAncestorOrigins')) isProxy('RAMMERHEAD');
-            else doCheck();
-        }).catch(() => doCheck()),
-
-        // LIBCURL
-        get(url + '/libcurl.wasm').then((data) => {
-            if (data.includes('libcurl/client/build/openssl-wasm')) isProxy('LIBCURL');
-            else doCheck();
-        })
-    ]);
+    if (flaggedChecks.length) console.log(`[CONFIRM] "${url}" flags checks`, flaggedChecks);
+    else console.log(`[!] [CLEARED] "${url}" failed all checks.`);
 };

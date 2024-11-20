@@ -1,5 +1,5 @@
 {
     "name": "proccychecc",
-    "type": "module",
-    "main": "src/run.js"
+    "main": "src/run.js",
+    "type": "module"
 }

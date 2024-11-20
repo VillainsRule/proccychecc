@@ -3,11 +3,22 @@ export const BANNED_GTAGS = [
     'G-3DTW1KTNCF', // https://gointospace.app
     'G-RD0VC48YMW', // https://utopiaweb.org
 
-    // sites flagged by UV_CONFIG but here for the lulz
+    // sites flagged by other flags but here for the lulz
     'G-0GR0HN1RFL', // https://radon.games
-    'G-6YEQ7Q0XRC', // https://dogesurf.app
     'G-P1JX4G9KSF', // https://aluu.xyz
     'G-QDSZE0VTXD', // https://shuttleproxy.com
     'G-BW3SZSE47T', // https://definitelyscience.com
     'G-ZT64FYRXR6', // https://phantomgames.dev
 ]
+
+const CHECK_GTAG = ({ landing }) => {
+    let flagged = false;
+
+    BANNED_GTAGS.forEach((tag) => {
+        if (landing.includes(`https://www.googletagmanager.com/gtag/js?id=${tag}`)) flagged = true;
+    });
+
+    return { p: !!flagged };
+}
+
+export default CHECK_GTAG;
